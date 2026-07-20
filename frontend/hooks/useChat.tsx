@@ -26,14 +26,22 @@ export function useChat() {
     setIsLoading(true);
 
     try {
-      // TODO: замінити на реальний виклик бекенду
-      await new Promise((resolve) => setTimeout(resolve, 1400));
+      const res = await fetch("http://localhost:8000/api/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: trimmed }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server responded with ${res.status}`);
+      }
+
+      const data: { response: string } = await res.json();
 
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content:
-          "Це тестова відповідь від системи. Наш бекенд опрацював ваш запит та підготував правовий аналіз на основі чинного законодавства та релевантної судової практики.",
+        content: data.response,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
