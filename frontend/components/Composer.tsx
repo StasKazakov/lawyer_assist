@@ -47,7 +47,7 @@ export default function Composer({
           )}
         </Button>
       </div>
-      <p className="mt-2 text-center text-xs text-muted-foreground">
+      <p className="mt-2 text-red-500 font-bold text-center text-ml text-muted-foreground">
         Тестова версія формує відповіді на основі 1000 судових справ
       </p>
     </form>

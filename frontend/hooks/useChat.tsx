@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import type { Message } from "@/types/message";
+import type { Message, CaseDocument } from "@/types/message";
 
 export function useChat() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -36,12 +36,14 @@ export function useChat() {
         throw new Error(`Server responded with ${res.status}`);
       }
 
-      const data: { response: string } = await res.json();
+      const documents: CaseDocument[] = await res.json();
+      console.log("Backend response:", documents);
 
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: data.response,
+        content: "",
+        documents,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);

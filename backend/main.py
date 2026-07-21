@@ -1,9 +1,19 @@
-from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-
-app = FastAPI(title="Lawyer Assist API")
-
+from tools.functions import generate_response
+from tools.db_connection import init_db, close_db
+ 
+ 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    yield
+    await close_db()
+ 
+ 
+app = FastAPI(title="Lawyer Assist API", lifespan=lifespan)
+ 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -11,28 +21,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-class QueryRequest(BaseModel):
-    message: str
-
-
-class QueryResponse(BaseModel):
-    response: str
-
-
-STUB_RESPONSE = (
-    "Це тестова відповідь від системи. Наш бекенд опрацював ваш запит "
-    "та підготував правовий аналіз на основі чинного законодавства "
-    "та релевантної судової практики."
-)
-
-
+ 
+ 
 @app.get("/")
 def health_check():
     return {"status": "ok"}
-
-
-@app.post("/api/query", response_model=QueryResponse)
-def query(request: QueryRequest):
-    return QueryResponse(response=STUB_RESPONSE)
+ 
+ 
+@app.post("/api/query")
+async def query(request: Request):
+    body = await request.json()
+    message = body.get("message", "")
+    return await generate_response(message)
